@@ -13,12 +13,15 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.test.json",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "biome check",
+    "lint:fix": "biome check --write"
   },
   "keywords": [],
   "author": "Daniel Alejandro Rodriguez Garcia",
   "license": "MIT",
   "devDependencies": {
+    "@biomejs/biome": "2.6.7",
     "@types/node": "^26.6.6",
     "typescript": "^7.0.2"
   }
