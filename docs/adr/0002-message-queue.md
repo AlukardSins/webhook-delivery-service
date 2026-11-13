@@ -1,6 +1,6 @@
 # ADR-0002: Message queue
 
-- Status: Accepted
+- Status: Accepted. Local development part (LocalStack) superseded by [ADR-0005](0005-local-sqs-emulator.md).
 - Date: 2026-11-09
 
 ## Context
