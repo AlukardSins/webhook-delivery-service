@@ -48,5 +48,5 @@ We use the hybrid: one shared fair queue for most tenants, and dedicated queues 
 - Each dedicated queue adds a queue, a DLQ, permissions and alarms to manage, which is why only promoted tenants get one.
 - During a promotion or demotion, a tenant's deliveries are spread across two queues for a while. This can reorder or duplicate deliveries, which our [delivery guarantee](../design.md#delivery-guarantee) already allows.
 - Per-tenant queue depth comes from CloudWatch for dedicated queues. For the shared queue it has to be computed from deliveries in Postgres.
-- LocalStack's support for fair queues needs checking. If it's missing, local runs use a plain shared queue and fairness is only tested against real SQS.
+- The local SQS emulator's support for fair queues needs checking (the [ADR-0005](0005-local-sqs-emulator.md) fidelity scores don't cover it). If it's missing, local runs use a plain shared queue and fairness is only tested against real SQS.
 - A slow receiver holds a worker for up to the 10 s timeout, so keeping 100 deliveries per second against slow endpoints can take up to 1000 concurrent deliveries per tenant. Worker capacity has to be sized for the tenants active at the same time, not only for the per-second rate.

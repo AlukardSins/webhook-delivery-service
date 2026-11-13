@@ -97,7 +97,7 @@ Rules:
 
 - No dashboard.
 - No support for multiple databases.
-- No support for multiple message brokers; we use Amazon SQS (LocalStack for local development). See [ADR-0002: Message queue](adr/0002-message-queue.md).
+- No support for multiple message brokers; we use Amazon SQS (the official AWS emulator for local development). See [ADR-0002: Message queue](adr/0002-message-queue.md) and [ADR-0005: Local SQS emulator](adr/0005-local-sqs-emulator.md).
 - No ordering guarantee.
 - No payload transformations.
 - Input only through the API; no inbound webhooks.
@@ -105,7 +105,7 @@ Rules:
 
 ## v1 scope
 
-The design covers more than v1 builds. v1 runs locally only (Postgres and LocalStack).
+The design covers more than v1 builds. v1 runs locally only (Postgres and the AWS emulator for SQS).
 
 Built in v1:
 
