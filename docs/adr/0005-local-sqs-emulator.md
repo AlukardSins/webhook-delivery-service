@@ -74,5 +74,8 @@ We use the official AWS emulator for SQS in local development, integration tests
 - No account or token is needed to run the project or its CI.
 - The behaviors the delivery pipeline depends on pass in the emulator, so integration tests against it are meaningful.
 - Some gaps stay: backlogs above 1000 messages, queue URL shape, exact error codes, and fair queues. Tests that depend on them run against real SQS before production, as ADR-0002 already required.
-- Fidelity can change between emulator releases. Pin the emulator image version in `docker-compose.yml`, and re-check the scores when upgrading it.
+- Fidelity can change between emulator releases, and the scores above only hold for commit `1874aea`. On Windows we build the image ourselves, and AWS's Dockerfile downloads the emulator RPM from an LTS/latest URL, so a rebuild can silently install a different version. Our Dockerfile must download a versioned RPM URL instead, and verify its checksum if AWS publishes one. When we upgrade, we re-check the scores.
+- The emulator sends anonymous usage data by default. This is a public repo that anyone can clone, so Compose and CI turn it off with `EMULATOR_TELEMETRY=off`.
+- The emulator keeps its state in memory, so every restart wipes the queues. The app or an init step must create the queues at startup, and doing it twice must be safe. Otherwise the first `docker compose restart` breaks the dev loop.
+- The emulator serves HTTPS on port 9297 and writes its own credentials file. The SDK config and CI must trust its certificate and use those credentials. The setup details belong to the Compose task.
 - `docs/design.md` and ADR-0004 now point here instead of LocalStack.
