@@ -11,6 +11,9 @@ build/
 .env.*
 !.env.example
 
+# AWS Emulator credentials and certificate (docker compose)
+.aws-emulator/
+
 # Logs
 logs/
 *.log

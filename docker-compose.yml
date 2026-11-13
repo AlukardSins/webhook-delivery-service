@@ -1,0 +1,77 @@
+# Local dependencies: Postgres and the AWS Emulator for SQS (ADR-0005).
+# Copy .env.example to .env to change the defaults.
+name: webhook-delivery-service
+
+services:
+  postgres:
+    image: postgres:18.7-alpine3.24
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-webhooks}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-webhooks}
+      POSTGRES_DB: ${POSTGRES_DB:-webhooks}
+    ports:
+      # Change POSTGRES_PORT if a local Postgres already uses 5432.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Postgres 18 images keep data under /var/lib/postgresql/<major>/.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  aws-emulator:
+    build: infra/aws-emulator
+    image: webhook-delivery-service/aws-emulator:1.0.345
+    # The port must match on both sides of `ports` and in `-p` (AWS docs).
+    command: ["-p", "9297"]
+    environment:
+      EMULATOR_TELEMETRY: "off"
+    ports:
+      # Bind to 127.0.0.1 only: 0.0.0.0 would expose the emulator to the network.
+      - "127.0.0.1:9297:9297"
+    volumes:
+      # The emulator writes its credentials, config and CA certificate here, new
+      # on every start. The app on the host reads them from ./.aws-emulator/9297/.
+      - ./.aws-emulator:/home/emulator/.aws/emulator
+    mem_limit: 2g
+    memswap_limit: 2g
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fsS
+        - --cacert
+        - /home/emulator/.aws/emulator/9297/ca.pem
+        - https://127.0.0.1:9297/__admin/health
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # One-shot: creates the queues, then exits. Re-runs on every up and restart.
+  create-queues:
+    image: amazon/aws-cli:2.40.3
+    depends_on:
+      aws-emulator:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/scripts/create-queues.sh"]
+    environment:
+      # Reached by service name. The emulator's certificate only names
+      # localhost and 127.0.0.1, so this step skips TLS verification (see the
+      # script). Sharing the emulator's network namespace would avoid that, but
+      # then `docker compose restart` fails for this container.
+      AWS_ENDPOINT_URL: https://aws-emulator:9297
+      AWS_REGION: us-east-1
+      AWS_SHARED_CREDENTIALS_FILE: /home/emulator/.aws/emulator/9297/emulator_credentials
+      AWS_EC2_METADATA_DISABLED: "true"
+      SQS_QUEUE_NAME: ${SQS_QUEUE_NAME:-deliveries}
+      SQS_DLQ_NAME: ${SQS_DLQ_NAME:-deliveries-dlq}
+      SQS_VISIBILITY_TIMEOUT_SECONDS: ${SQS_VISIBILITY_TIMEOUT_SECONDS:-60}
+      SQS_MAX_RECEIVE_COUNT: ${SQS_MAX_RECEIVE_COUNT:-5}
+    volumes:
+      - ./.aws-emulator:/home/emulator/.aws/emulator:ro
+      - ./infra/aws-emulator/create-queues.sh:/scripts/create-queues.sh:ro
+
+volumes:
+  postgres-data:
