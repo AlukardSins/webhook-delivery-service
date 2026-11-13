@@ -8,6 +8,7 @@ Multi-tenant webhook delivery service (Node.js/TypeScript). Public portfolio pro
 Purpose: prove senior backend skills (security, resilience, correctness under concurrency) and learn by building.
 
 Source of truth, read before any non-trivial work:
+
 - `docs/design.md`: requirements, delivery state machine, edge cases, v1 scope
 - `docs/adr/`: decisions. Never contradict an ADR silently. If a change needs a different decision, stop and propose a new ADR.
 
@@ -16,12 +17,14 @@ Source of truth, read before any non-trivial work:
 The owner (Daniel) is a backend engineer using this project to learn. Two modes:
 
 **Learn mode (default)**
+
 - Daniel writes the code. Claude explains, reviews and asks questions.
 - Do not write or edit implementation code unless Daniel explicitly asks.
 - Teach the essentials of a concept, then check understanding with one question at a time.
 - Applies to: domain logic, delivery/retry/outbox, signing, SSRF protection, data access, anything in the design's state machine.
 
 **Agent mode (only when Daniel says "agent mode" for a task)**
+
 - Claude implements, following the workflow below.
 - Default scope: tooling, config, CI, Docker Compose, scripts, test scaffolding and fixtures.
 - Core logic only if Daniel names it explicitly for that task.
@@ -35,6 +38,7 @@ The owner (Daniel) is a backend engineer using this project to learn. Two modes:
 5. Summarize: what changed, what was not done, open risks.
 
 Never, in any mode, without explicit OK:
+
 - commit, push, open or merge PRs
 - add or upgrade dependencies
 - edit `docs/design.md` or any ADR
@@ -90,6 +94,7 @@ Never, in any mode, without explicit OK:
 - One logical change per commit.
 
 Commit message:
+
 - Subject: `type(scope): summary`. Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`, `perf`, `build`. Scope optional (e.g. `delivery`, `outbox`, `api`).
 - Summary in imperative mood, lowercase, no trailing period, max 72 characters ("add retry backoff", not "added retry backoff").
 - Body (skip only for trivial changes): blank line after the subject, wrapped at 72. Say why the change was needed and what changed; not how, the diff shows that.
@@ -97,6 +102,7 @@ Commit message:
 - Commits made by Claude end with `Co-Authored-By: Claude <noreply@anthropic.com>`. No session links or other trailers.
 
 PR description:
+
 - Title follows the commit subject format.
 - Sections: **Why** (problem, linked issue/ADR), **What** (changes as a short list), **How tested** (commands run and result; new tests and the edge cases they cover), **Risks / follow-ups** (known limits, what was deferred).
 - Size: under 400 changed lines (lockfiles excluded). Bigger work is split into stacked PRs.
